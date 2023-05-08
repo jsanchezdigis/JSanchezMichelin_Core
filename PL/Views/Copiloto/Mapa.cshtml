@@ -1,0 +1,92 @@
+﻿@model ML.Punto
+@{
+    ViewData["Title"] = "Mapa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Puntos</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div id="map"></div>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSKBDdPPlfca_zTwyxKiicRQn1qfgRjLw&callback=initMap&v=weekly&sensor=false" defer></script>
+    </div>
+    <div class="col-md-6">
+        <div id="pano"></div>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSKBDdPPlfca_zTwyxKiicRQn1qfgRjLw&callback=initMap&v=weekly&sensor=false" defer></script>
+    </div>
+</div>
+
+<style>
+    #map {
+        height: 400px;
+        width: 100%;
+    }
+
+    #pano {
+        float: left;
+        height: 100%;
+        width: 100%;
+    }
+
+    body {
+        background: -webkit-linear-gradient(left, #25c481, #25b7c4);
+        background: linear-gradient(to right, #25c481, #25b7c4);
+        font-family: 'Roboto', sans-serif;
+    }
+</style>
+
+@section Scripts{
+    <script type="text/javascript">
+        function initMap(){
+            //inicializar el mapa
+            myLatlng = { lat: 19.563640, lng: -99.203669 };
+            const map = new google.maps.Map(document.getElementById("map"),{
+                zoom: 12,
+                center: myLatlng,
+            });
+
+            //Obtener los puntos
+            @foreach (ML.Punto punto in Model.Puntos)
+        {
+            //texto flotante al seleccionar la marca
+            <text>
+                        var contentString = '<div id="content">' +
+                    '<div id="siteNotice">' +
+                    '</div>' +
+                    'Nombre: ' + '@punto.Nombre' +
+                    '<div id="bodyContent">' +
+                    'Fecha:' + '@punto.FechaHora' + "<br>" +
+                    'ID:' + '@punto.IdPunto' + "<br>" +
+                    'Latitud:' + '@punto.Latitud' + ' ' + 'Longitud:' + '@punto.Longitud' + "<br>" +
+                    '</div>' +
+                    '</div>';
+                var marker_@punto.IdPunto = new google.maps.Marker({ position: { lat: @punto.Latitud, lng: @punto.Longitud }, map: map });
+                (marker_@punto.IdPunto).addListener("click", function () {
+                    (infoWindow_@punto.IdPunto).open(map, marker_@punto.IdPunto);
+
+                //Mostrar Street view con los puntos datos
+                puntos = { lat: @punto.Latitud, lng: @punto.Longitud};
+                const panorama = new google.maps.StreetViewPanorama(
+                    document.getElementById("pano"),
+                    {
+                        position: puntos,
+                        pov: {
+                            heading: 34,
+                            pitch: 10,
+                        },
+                    }
+                );
+                map.setStreetView(panorama);
+                });
+
+            var infoWindow_@punto.IdPunto = new google.maps.InfoWindow({
+                content: contentString,
+                ariaLabel: "Puntos",
+            });
+            </text>
+        }
+            window.initMap = initMap;
+        }
+    </script>
+}
